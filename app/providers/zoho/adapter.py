@@ -30,7 +30,7 @@ class ZohoProvider(AccountingProvider):
         data = await self._client.get(f"/chartofaccounts/{account_id}")
         return mappers.zoho_account_to_model(data["account"])
 
-    # -- Transactions --
+    # -- Transactions (backed by Zoho bank transactions) --
 
     async def list_transactions(
         self,
@@ -45,15 +45,15 @@ class ZohoProvider(AccountingProvider):
             params["date_end"] = end_date.isoformat()
         params.update(filters)
         items = await self._client.get_all_pages(
-            "/transactions", "transactions", params=params
+            "/banktransactions", "banktransactions", params=params
         )
         return [mappers.zoho_transaction_to_model(t) for t in items]
 
     async def update_transaction_category(
         self, txn_id: str, account_id: str
     ) -> Transaction:
-        data = await self._client.put(
-            f"/transactions/{txn_id}",
+        data = await self._client.post(
+            f"/banktransactions/uncategorized/{txn_id}/categorize",
             json={"account_id": account_id},
         )
         return mappers.zoho_transaction_to_model(data.get("transaction", data))
@@ -80,7 +80,7 @@ class ZohoProvider(AccountingProvider):
         self, bank_txn_id: str, entity_id: str, entity_type: str
     ) -> bool:
         await self._client.post(
-            f"/banktransactions/{bank_txn_id}/match",
+            f"/banktransactions/uncategorized/{bank_txn_id}/match",
             json={
                 "transactions_to_be_matched": [
                     {"transaction_id": entity_id, "transaction_type": entity_type}
