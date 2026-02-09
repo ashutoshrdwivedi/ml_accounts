@@ -8,7 +8,7 @@ Phase 1 integrates with Zoho Books. The architecture is provider-agnostic — sw
 
 ```bash
 # Install
-pip install -e ".[dev]"
+uv sync --dev
 
 # Configure
 cp .env.example .env
@@ -32,7 +32,7 @@ cp .env.example .env
 ## Running
 
 ```bash
-uvicorn app.main:app --reload
+uv run uvicorn app.main:app --reload
 ```
 
 The API is available at `http://localhost:8000`. Interactive docs at `http://localhost:8000/docs`.
@@ -108,7 +108,7 @@ GET /health
 ## Tests
 
 ```bash
-python -m pytest tests/ -v
+uv run pytest tests/ -v
 ```
 
 Tests use a `MockProvider` and `MockLLMClient` — no real credentials needed.
