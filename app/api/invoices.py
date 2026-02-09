@@ -11,7 +11,11 @@ from app.providers.base import AccountingProvider
 router = APIRouter(prefix="/api/invoices", tags=["invoices"])
 
 
-@router.post("/extract", response_model=ExtractedInvoice)
+@router.post("/extract", response_model=ExtractedInvoice,
+    summary="Extract data from an invoice image or PDF",
+    description="Upload an invoice file (image or PDF). The LLM vision API reads it and "
+    "extracts structured data: vendor name, invoice number, dates, line items, totals, and tax. "
+    "Returns the extracted data for review. Does NOT create anything in Zoho yet.")
 async def extract_invoice(
     file: UploadFile,
     provider: AccountingProvider = Depends(get_accounting_provider),
@@ -22,7 +26,11 @@ async def extract_invoice(
     return await extractor.extract_invoice(file_bytes, file.filename or "upload")
 
 
-@router.post("/extract/create", response_model=Invoice)
+@router.post("/extract/create", response_model=Invoice,
+    summary="Create a Zoho invoice from extracted data",
+    description="Takes the extracted invoice data from the /extract endpoint and creates "
+    "an actual invoice in Zoho Books. Automatically matches the vendor name to an existing "
+    "Zoho contact if one exists. Pass the response from /extract directly as the request body.")
 async def create_from_extracted(
     extracted: ExtractedInvoice,
     provider: AccountingProvider = Depends(get_accounting_provider),
